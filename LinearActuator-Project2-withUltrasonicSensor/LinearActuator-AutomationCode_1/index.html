@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Single toggle</title>
+    <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-database.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.4/css/all.css">
+    
+    <style>
+        /* General Styles */
+        body {
+            background: #031321;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Landing Page Styles */
+        #landing-page {
+            text-align: center;
+            color: white;
+        }
+
+        #landing-page h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        #landing-page p {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+        }
+
+        #landing-page button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            background: #21ecf3;
+            border: none;
+            border-radius: 5px;
+            color: #031321;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        #landing-page button:hover {
+            background: #1ab4b9;
+        }
+
+        /* Hide all pages by default */
+        .page {
+            display: none;
+        }
+
+        /* Show the active page */
+        .page.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Styles for the second page (your existing code) */
+        .wrapper {
+            display: flex;
+            width: 90%;
+            max-width: 1200px;
+            background: #2c3e50;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .left-panel, .right-panel {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .left-panel {
+            background: #031321;
+        }
+
+        .right-panel {
+            background: #2c3e50;
+        }
+
+        .icon1 {    
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        .actuator-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .actuator-frame {
+            width: 300px;
+            height: 100px;
+            background: #2c3e50;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+        }
+
+        .actuator-rod {
+            position: absolute;
+            width: 50px;
+            height: 80px;
+            background: #34495e;
+            top: 10px;
+            left: 10px;
+            border-radius: 5px;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .actuator-rod.extended {
+            transform: translateX(240px);
+        }
+
+        .progress-container {
+            width: 300px;
+            height: 20px;
+            background: #2c3e50;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #21ecf3;
+            transition: width 0.5s linear;
+        }
+
+        .status-indicator, 
+        .countdown-timer, 
+        .emergency-status, 
+        .bin-percentage, 
+        .bin-percentage-1,
+        .bin-percentage-2,
+        .crush-counter {
+            color: #ecf0f1;
+            font-size: 18px;
+            text-shadow: 0 0 5px rgba(255,255,255,0.3);
+            margin: 10px 0;
+        }
+
+        .bins-container {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .bin-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 10px;
+        }
+
+        .bin-outline {
+            width: 80px;
+            height: 120px;
+            border: 3px solid #21ecf3;
+            border-radius: 5px;
+            position: relative;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .bin-fill-level {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0%;
+            background: #21ecf3;
+            transition: height 0.5s ease-in-out;
+        }
+
+        .bin-label {
+            color: #ecf0f1;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .reset-button {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #21ecf3;
+            border: none;
+            border-radius: 5px;
+            color: #031321;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .reset-button:hover {
+            background: #1ab4b9;
+        }
+
+        .admin-login-form {
+            background: #2c3e50;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .admin-login-form input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            background: #ecf0f1;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .admin-login-form button {
+            padding: 10px 20px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 5px;
+            background: #21ecf3;
+            color: #031321;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .admin-login-form button:hover {
+            background: #1ab4b9;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .change-key-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #2c3e50;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: #21ecf3;
+            border: none;
+            border-radius: 5px;
+            color: #031321;
+            cursor: pointer;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Landing Page -->
+    <div id="landing-page" class="page active">
+        <div class="admin-login-form">
+            <h1>Admin Login</h1>
+            <input type="password" id="admin-key" placeholder="Enter Admin Key">
+            <div class="error-message">Incorrect admin key!</div>
+            <button id="login-button">Login</button>
+        </div>
+    </div>
+
+    <!-- Second Page (Modified with Change Key Feature) -->
+    <div id="second-page" class="page">
+        <button class="back-button">Back</button>
+        <div class="change-key-container">
+            <input type="password" id="new-admin-key" placeholder="New Admin Key">
+            <button id="change-key-button">Change Key</button>
+        </div>
+        <!-- Rest of your existing second page content -->
+        <div class="wrapper">
+            <div class="left-panel">
+                <a class="icon1">
+                    <i class="fas fa-4x fa-tv"></i>
+                </a>
+                <div class="actuator-container">
+                    <div class="actuator-frame">
+                        <div class="actuator-rod"></div>
+                    </div>
+                    
+                    <div class="progress-container">
+                        <div class="progress-bar"></div>
+                    </div>
+                    <div class="status-indicator">Status: Idle</div>
+                    <div class="countdown-timer">Time Remaining: 30s</div>
+                </div>
+            </div>
+            <div class="right-panel">
+                <div class="bins-container">
+                    <div class="bin-container">
+                        <div class="bin-label">Bin 1</div>
+                        <div class="bin-outline">
+                            <div class="bin-fill-level bin-fill-1"></div>
+                        </div>
+                        <div class="bin-percentage-1">Fill: 0%</div>
+                    </div>
+                    <div class="bin-container">
+                        <div class="bin-label">Bin 2</div>
+                        <div class="bin-outline">
+                            <div class="bin-fill-level bin-fill-2"></div>
+                        </div>
+                        <div class="bin-percentage-2">Fill: 0%</div>
+                    </div>
+                </div>
+                <div class="bin-percentage">Average Fill Level: 0%</div>
+                <div class="crush-counter">Crushes: 0</div>
+                <button class="reset-button">Reset Counter</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyB9WEKy2RsQmrimD2AW_2lhpAfjGzix878",
+            authDomain: "toggle-6ce93.firebaseapp.com",
+            databaseURL: "https://toggle-6ce93-default-rtdb.firebaseio.com",
+            projectId: "toggle-6ce93",
+            storageBucket: "toggle-6ce93.appspot.com",
+            messagingSenderId: "894188303437",
+            appId: "1:894188303437:web:c59f8d5bfdc61158629804",
+            measurementId: "G-T7XSCYV8L7"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        $(document).ready(function(){
+            var database = firebase.database();
+            var actuatorRef = database.ref('ActuatorStatus');
+            var $rod = $('.actuator-rod');
+            var $status = $('.status-indicator');
+            var $progressBar = $('.progress-bar');
+            var $countdownTimer = $('.countdown-timer');
+            var totalTime = 30; // Total time in seconds
+            var countdownInterval;
+            
+            // References for bin fill levels
+            var binFillRef = database.ref('BinFillLevel');
+            var binFill1Ref = database.ref('BinFillLevel1');
+            var binFill2Ref = database.ref('BinFillLevel2');
+            
+            // UI elements for bin fill levels
+            var $binFill = $('.bin-fill-level');
+            var $binFill1 = $('.bin-fill-1');
+            var $binFill2 = $('.bin-fill-2');
+            var $binPercentage = $('.bin-percentage');
+            var $binPercentage1 = $('.bin-percentage-1');
+            var $binPercentage2 = $('.bin-percentage-2');
+            
+            var crushCountRef = database.ref('CrushCount');
+            var $crushCounter = $('.crush-counter');
+
+            // Initialize admin key if it doesn't exist
+            database.ref('AdminKey').once('value', function(snapshot) {
+                if (!snapshot.exists()) {
+                    database.ref('AdminKey').set('admin123'); // Default key
+                }
+            });
+
+            // Handle admin login
+            $('#login-button').click(function() {
+                var enteredKey = $('#admin-key').val();
+                database.ref('AdminKey').once('value', function(snapshot) {
+                    var correctKey = snapshot.val();
+                    if (enteredKey === correctKey) {
+                        $('#landing-page').removeClass('active');
+                        $('#second-page').addClass('active');
+                        $('.back-button, .change-key-container').show();
+                        $('.error-message').hide();
+                    } else {
+                        $('.error-message').show();
+                    }
+                });
+            });
+
+            // Handle change key
+            $('#change-key-button').click(function() {
+                var newKey = $('#new-admin-key').val();
+                if (newKey.length > 0) {
+                    database.ref('AdminKey').set(newKey);
+                    alert('Admin key updated successfully!');
+                    $('#new-admin-key').val('');
+                } else {
+                    alert('Please enter a valid key!');
+                }
+            });
+
+            // Handle back button
+            $('.back-button').click(function() {
+                $('#second-page').removeClass('active');
+                $('#landing-page').addClass('active');
+                $('.back-button, .change-key-container').hide();
+                $('#admin-key').val('');
+                $('.error-message').hide();
+            });
+
+            function resetCountdown() {
+                // Clear any existing interval
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                }
+                
+                // Reset progress bar and countdown
+                $progressBar.css('width', '0%');
+                $countdownTimer.text('Time Remaining: 30s');
+            }
+
+            function startCountdown(time) {
+                // Clear any existing interval
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                }
+
+                var remainingTime = time;
+                
+                countdownInterval = setInterval(function() {
+                    remainingTime--;
+                    
+                    // Update progress bar
+                    var progress = ((time - remainingTime) / time) * 100;
+                    $progressBar.css('width', progress + '%');
+                    
+                    // Update countdown text
+                    $countdownTimer.text(`Time Remaining: ${remainingTime}s`);
+                    
+                    // Stop countdown when time is up
+                    if (remainingTime <= 0) {
+                        clearInterval(countdownInterval);
+                        $progressBar.css('width', '100%');
+                        $countdownTimer.text('Time Remaining: 0s');
+                    }
+                }, 1000);
+            }
+            
+            // Function to update bin fill level colors based on percentage
+            function updateBinFillColor($element, fillLevel) {
+                if (fillLevel > 80) {
+                    $element.css('background', '#e74c3c'); // Red for high level
+                } else if (fillLevel > 50) {
+                    $element.css('background', '#f1c40f'); // Yellow for medium level
+                } else {
+                    $element.css('background', '#21ecf3'); // Original color for low level
+                }
+            }
+
+            // Listen for Actuator Status changes
+            actuatorRef.on("value", function(snap){
+                var ActuatorStatus = snap.val();
+                
+                // Update UI based on Actuator Status
+                switch(ActuatorStatus) {
+                    case "Extending":
+                        $rod.removeClass('extended');
+                        $status.text('Status: Extending');
+                        startCountdown(totalTime);
+                        break;
+                    case "Extended":
+                        $rod.addClass('extended');
+                        $status.text('Status: Extended');
+                        // Ensure progress bar is at 100%
+                        $progressBar.css('width', '100%');
+                        $countdownTimer.text('Time Remaining: 0s');
+                        break;
+                    case "Retracting":                      
+                        $rod.addClass('extended');
+                        $status.text('Status: Retracting');
+                        startCountdown(totalTime);
+                        break;
+    
+                    case "Retracted":                       
+                        $rod.removeClass('extended');
+                        $status.text('Status: Idle');
+                        $progressBar.css('width', '0%');
+                        $countdownTimer.text('Time Remaining: 30s');
+                        
+                        // Clear any existing countdown interval
+                        if (countdownInterval) {
+                            clearInterval(countdownInterval);
+                        }
+                        break;
+                    default:
+                        $status.text('Status: Idle');
+                        $progressBar.css('width', '0%');
+                        $countdownTimer.text('Time Remaining: 30s');
+                        
+                        // Clear any existing countdown interval
+                        if (countdownInterval) {
+                            clearInterval(countdownInterval);
+                        }
+                }
+            });
+            
+            // Listen for average bin fill level changes
+            binFillRef.on("value", function(snap) {
+                var fillLevel = snap.val();
+                if (fillLevel !== null) {
+                    // Update the percentage text
+                    $binPercentage.text('Average Fill Level: ' + Math.round(fillLevel) + '%');
+                }
+            });
+            
+            // Listen for bin 1 fill level changes
+            binFill1Ref.on("value", function(snap) {
+                var fillLevel = snap.val();
+                if (fillLevel !== null) {
+                    // Update the visual fill level
+                    $binFill1.css('height', fillLevel + '%');
+                    
+                    // Update the percentage text
+                    $binPercentage1.text('Fill: ' + Math.round(fillLevel) + '%');
+                    
+                    // Change color based on fill level
+                    updateBinFillColor($binFill1, fillLevel);
+                }
+            });
+            
+            // Listen for bin 2 fill level changes
+            binFill2Ref.on("value", function(snap) {
+                var fillLevel = snap.val();
+                if (fillLevel !== null) {
+                    // Update the visual fill level
+                    $binFill2.css('height', fillLevel + '%');
+                    
+                    // Update the percentage text
+                    $binPercentage2.text('Fill: ' + Math.round(fillLevel) + '%');
+                    
+                    // Change color based on fill level
+                    updateBinFillColor($binFill2, fillLevel);
+                }
+            });
+            
+            crushCountRef.on("value", function(snap) {
+                var count = snap.val();
+                if (count !== null) {
+                    $crushCounter.text('Crushes: ' + count);
+                }
+            });
+
+            // Handle reset button click
+            $('.reset-button').click(function() {
+                // Directly reset the crush counter
+                database.ref('CrushCount').set(0);
+                
+                // Also set the ResetCount flag for backward compatibility with ESP32
+                database.ref('ResetCount').set(true);
+            });
+        });
+    </script>
+</body>
+</html>
