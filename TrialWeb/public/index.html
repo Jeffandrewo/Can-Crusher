@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Single toggle</title>
+    <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-database.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="script.js"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.4/css/all.css">
+    <link rel="stylesheet" href="style.css">
+    
+
+</head>
+<body>
+    <!-- Landing Page -->
+    <div id="landing-page" class="page active">
+        <div class="admin-login-form">
+            <h1>Admin Login</h1>
+            <input type="password" id="admin-key" placeholder="Enter Admin Key">
+            <div class="error-message">Incorrect admin key!</div>
+            <button id="login-button">Login</button>
+        </div>
+    </div>
+
+    <!-- Second Page (Modified to integrate crusher count with recycling dashboard) -->
+    <div id="second-page" class="page">
+        <button class="back-button">Back</button>
+        <div class="change-key-container">
+            <input type="password" id="new-admin-key" placeholder="New Admin Key">
+            <button id="change-key-button">Change Key</button>
+        </div>
+        
+        <div class="wrapper">
+            <div class="main-content">
+                <div class="left-panel">
+                    <a class="icon1">
+                        <i class="fas fa-4x fa-tv"></i>
+                    </a>
+                    <div class="actuator-container">
+                        <div class="actuator-frame">
+                            <div class="actuator-rod"></div>
+                        </div>
+                        
+                        <div class="progress-container">
+                            <div class="progress-bar"></div>
+                        </div>
+                        <div class="status-indicator">Status: Idle</div>
+                        <div class="countdown-timer">Time Remaining: 30s</div>
+                    </div>
+                </div>
+                <div class="right-panel">
+                    <div class="bins-container">
+                        <div class="bin-container">
+                            <div class="bin-label">Bin 1</div>
+                            <div class="bin-outline">
+                                <div class="bin-fill-level bin-fill-1"></div>
+                            </div>
+                            <div class="bin-percentage-1">Fill: 0%</div>
+                        </div>
+                        <div class="bin-container">
+                            <div class="bin-label">Bin 2</div>
+                            <div class="bin-outline">
+                                <div class="bin-fill-level bin-fill-2"></div>
+                            </div>
+                            <div class="bin-percentage-2">Fill: 0%</div>
+                        </div>
+                    </div>
+                    <div class="bin-percentage">Average Fill Level: 0%</div>
+                </div>
+            </div>
+            
+            <!-- Integrated Recycling Dashboard with Crusher Counter -->
+            <div class="recycling-dashboard">
+                <h2 class="counts-heading">Recycling Statistics</h2>
+                <div class="count-cards">
+                    <div class="count-card">
+                        <div class="count-icon plastic-icon">
+                            <i class="fas fa-wine-bottle"></i>
+                        </div>
+                        <div class="count-title">Plastic Bottles</div>
+                        <div class="count-value" id="plastic-count">0</div>
+                    </div>
+                    
+                    <div class="count-card">
+                        <div class="count-icon aluminum-icon">
+                            <i class="fas fa-drum"></i>
+                        </div>
+                        <div class="count-title">Aluminum Cans</div>
+                        <div class="count-value" id="aluminum-count">0</div>
+                    </div>
+                    
+                    <div class="count-card">
+                        <div class="count-icon crusher-icon">
+                            <i class="fas fa-compress-alt"></i>
+                        </div>
+                        <div class="count-title">Total Crushes</div>
+                        <div class="count-value" id="crush-count">0</div>
+                    </div>
+                </div>
+                <button class="reset-button" id="reset-counts" style="margin-top: 15px;">Reset All Counts</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
