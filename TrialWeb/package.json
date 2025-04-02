@@ -1,16 +1,13 @@
 {
-    "name": "bin-monitor-notifications",
-    "version": "1.0.0",
-    "description": "SMS notifications for bin fill levels",
-    "main": "index.js",
-    "scripts": {
-      "start": "node index.js"
+    "functions": {
+      "api/index.js": {
+        "memory": 1024,
+        "maxDuration": 10
+      }
     },
-    "dependencies": {
-      "firebase-admin": "^11.10.1",
-      "twilio": "^4.11.0"
-    },
-    "engines": {
-      "node": ">=18.x"
-    }
+    "rewrites": [
+      { "source": "/api/(.*)", "destination": "/api/index.js" },
+      { "source": "/(.*)", "destination": "/public/$1" }
+    ]
   }
+  
