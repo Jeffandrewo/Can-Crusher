@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Statistics</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="statistics.js"></script>
+
+</head>
+<body>
+
+    <button class="back-button" onclick="location.href='Main.html'">Back</button>
+
+    <div class="statistics-container">
+        <h1>Recycling Statistics</h1>
+        
+        <div class="filter-controls">
+            <div class="month-selector">
+                <label for="month-select">Select Month:</label>
+                <select id="month-select">
+                    <option value="all">All Months</option>
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
+                <button id="apply-filter">Apply Filter</button>
+            </div>
+            <button id="refresh-data">Refresh Data</button>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="statistics-chart"></canvas>
+        </div>
+
+       
+    </div>
+
+</body>
+</html>
