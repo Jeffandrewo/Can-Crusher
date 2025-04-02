@@ -74,112 +74,53 @@ document.addEventListener("DOMContentLoaded", function () {
         let plasticData = Array(12).fill(0);
         let aluminumData = Array(12).fill(0);
     
-        // First try to fetch from the MonthTotals structure (which seems to be what you're using in your counter code)
-        let promises = [
-            database.ref('PlasticMonthTotals').once("value"),
-            database.ref('AluminumMonthTotals').once("value")
-        ];
+        database.ref().once("value", function (snapshot) {
+            if (!snapshot.exists()) {
+                console.log("No data found in Firebase.");
+                return;
+            }
     
-        Promise.all(promises)
-            .then(snapshots => {
-                let plasticTotals = snapshots[0].val() || {};
-                let aluminumTotals = snapshots[1].val() || {};
-                
-                console.log("Plastic Month Totals:", plasticTotals);
-                console.log("Aluminum Month Totals:", aluminumTotals);
-                
-                // Update data arrays based on monthly totals
-                Object.keys(plasticTotals).forEach(monthIndex => {
-                    let index = parseInt(monthIndex, 10);
-                    if (index >= 0 && index < 12) {
-                        if (selectedMonth === "all" || index === parseInt(selectedMonth) - 1) {
-                            plasticData[index] = plasticTotals[monthIndex] || 0;
+            let data = snapshot.val();
+            console.log("Firebase Data:", data); // Debugging
+    
+            if (data.PlasticBottleTimestamps) {
+                Object.values(data.PlasticBottleTimestamps).forEach((entry) => {
+                    let dateParts = entry.date.split(" ");
+                    let monthName = dateParts[0];
+                    let monthIndex = months.indexOf(monthName);
+    
+                    if (monthIndex >= 0 && monthIndex < 12) {
+                        let count = parseInt(entry.count, 10) || 0;
+                        if (selectedMonth === "all" || monthIndex === parseInt(selectedMonth) - 1) {
+                            plasticData[monthIndex] = count; // Assign instead of adding
                         }
                     }
                 });
-                
-                Object.keys(aluminumTotals).forEach(monthIndex => {
-                    let index = parseInt(monthIndex, 10);
-                    if (index >= 0 && index < 12) {
-                        if (selectedMonth === "all" || index === parseInt(selectedMonth) - 1) {
-                            aluminumData[index] = aluminumTotals[monthIndex] || 0;
+            }
+    
+            if (data.AluminumCanTimestamps) {
+                Object.values(data.AluminumCanTimestamps).forEach((entry) => {
+                    let dateParts = entry.date.split(" ");
+                    let monthName = dateParts[0];
+                    let monthIndex = months.indexOf(monthName);
+    
+                    if (monthIndex >= 0 && monthIndex < 12) {
+                        let count = parseInt(entry.count, 10) || 0;
+                        if (selectedMonth === "all" || monthIndex === parseInt(selectedMonth) - 1) {
+                            aluminumData[monthIndex] = count; // Assign instead of adding
                         }
                     }
                 });
-                
-                // Fall back to the timestamps approach if we didn't get data from the totals
-                let hasData = plasticData.some(val => val > 0) || aluminumData.some(val => val > 0);
-                
-                if (!hasData) {
-                    console.log("No data found in MonthTotals, checking timestamps...");
-                    // Try the old way (looking at timestamps)
-                    return database.ref().once("value");
-                } else {
-                    console.log("Data found in MonthTotals, updating chart...");
-                    return null;
-                }
-            })
-            .then(snapshot => {
-                if (!snapshot) {
-                    // We already have data from MonthTotals
-                    return;
-                }
-                
-                if (!snapshot.exists()) {
-                    console.log("No data found in Firebase.");
-                    return;
-                }
-                
-                let data = snapshot.val();
-                console.log("Firebase Data:", data); // Debugging
-                
-                if (data.PlasticBottleTimestamps) {
-                    Object.values(data.PlasticBottleTimestamps).forEach((entry) => {
-                        // Check if this is a count entry (not a reset event)
-                        if (entry.date && !entry.event) {
-                            let dateParts = entry.date.split(" ");
-                            let monthName = dateParts[0];
-                            let monthIndex = months.indexOf(monthName);
-                            
-                            if (monthIndex >= 0 && monthIndex < 12) {
-                                let count = parseInt(entry.count, 10) || 0;
-                                if (selectedMonth === "all" || monthIndex === parseInt(selectedMonth) - 1) {
-                                    // Use the highest count for the month
-                                    plasticData[monthIndex] = Math.max(plasticData[monthIndex], count);
-                                }
-                            }
-                        }
-                    });
-                }
-                
-                if (data.AluminumCanTimestamps) {
-                    Object.values(data.AluminumCanTimestamps).forEach((entry) => {
-                        // Check if this is a count entry (not a reset event)
-                        if (entry.date && !entry.event) {
-                            let dateParts = entry.date.split(" ");
-                            let monthName = dateParts[0];
-                            let monthIndex = months.indexOf(monthName);
-                            
-                            if (monthIndex >= 0 && monthIndex < 12) {
-                                let count = parseInt(entry.count, 10) || 0;
-                                if (selectedMonth === "all" || monthIndex === parseInt(selectedMonth) - 1) {
-                                    // Use the highest count for the month
-                                    aluminumData[monthIndex] = Math.max(aluminumData[monthIndex], count);
-                                }
-                            }
-                        }
-                    });
-                }
-            })
-            .finally(() => {
-                console.log("Final Plastic Data:", plasticData);
-                console.log("Final Aluminum Data:", aluminumData);
-                
-                // Update the chart with our data
-                statisticsChart.data.datasets[0].data = [...plasticData];
-                statisticsChart.data.datasets[1].data = [...aluminumData];
-                statisticsChart.update();
-            });
+            }
+    
+            console.log("Updated Plastic Data:", plasticData);
+            console.log("Updated Aluminum Data:", aluminumData);
+    
+            // Ensure chart data is fully reset before updating
+            statisticsChart.data.datasets[0].data = [...plasticData];
+            statisticsChart.data.datasets[1].data = [...aluminumData];
+            statisticsChart.update();
+        });
     }
     
     // Automatically fetch data on page load

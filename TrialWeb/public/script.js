@@ -234,44 +234,30 @@ $(document).ready(function(){
         }
     });
     
-    // Define months array at a global scope where both event handlers can access it
-    var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    
     // Track previous values for counts to detect increments
     var previousPlasticCount = 0;
     var previousAluminumCount = 0;
     
-    // In your event handlers where you create timestamp entries
     plasticBottleCountRef.on("value", function(snap) {
         var count = snap.val();
         if (count !== null) {
             $plasticCount.text(count);
             
-            // Only log a timestamp if the count has actually increased
+            // If count has increased, log a timestamp
             if (count > previousPlasticCount) {
                 var now = new Date();
-                var monthYear = now.toLocaleDateString('en-PH', { month: 'long', year: 'numeric' });
+                var monthYear = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); // "March 2025"
                 
-                // Check if we've already logged this count value for this month
-                let monthIndex = months.indexOf(monthYear.split(" ")[0]);
-                let currentMonthRef = database.ref(`PlasticMonthTotals/${monthIndex}`);
+                var timestampData = {
+                    date: monthYear,  // Stores only Month and Year
+                    time: now.toLocaleTimeString(),
+                    count: count,
+                    previousCount: previousPlasticCount
+                };
                 
-                currentMonthRef.once("value", function(snapshot) {
-                    let currentMonthTotal = snapshot.val() || 0;
-                    
-                    // Only create a new timestamp if this is a new highest value
-                    if (count > currentMonthTotal) {
-                        var timestampData = {
-                            date: monthYear,
-                            time: now.toLocaleTimeString(),
-                            count: count,
-                            previousCount: previousPlasticCount
-                        };
-                        
-                        // Push the timestamp and update the monthly total
-                        plasticTimestampsRef.push().set(timestampData);
-                        currentMonthRef.set(count);
-                    }
-                });
+                // Push the timestamp to the database
+                plasticTimestampsRef.push().set(timestampData);
             }
             
             previousPlasticCount = count;
@@ -279,44 +265,32 @@ $(document).ready(function(){
     });
     
     
-    // Aluminum Can Count - Same method as Plastic
     aluminumCanCountRef.on("value", function(snap) {
         var count = snap.val();
         if (count !== null) {
             $aluminumCount.text(count);
             
-            // Only log a timestamp if the count has actually increased
+            // If count has increased, log a timestamp
             if (count > previousAluminumCount) {
                 var now = new Date();
-                var monthYear = now.toLocaleDateString('en-PH', { month: 'long', year: 'numeric' });
+                var monthYear = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); // "March 2025"
                 
-                // Check if we've already logged this count value for this month
-                let monthIndex = months.indexOf(monthYear.split(" ")[0]);
-                let currentMonthRef = database.ref(`AluminumMonthTotals/${monthIndex}`);
+                var timestampData = {
+                    date: monthYear,  // Stores only Month and Year
+                    time: now.toLocaleTimeString(),
+                    count: count,
+                    previousCount: previousAluminumCount
+                };
                 
-                currentMonthRef.once("value", function(snapshot) {
-                    let currentMonthTotal = snapshot.val() || 0;
-                    
-                    // Only create a new timestamp if this is a new highest value
-                    if (count > currentMonthTotal) {
-                        var timestampData = {
-                            date: monthYear,
-                            time: now.toLocaleTimeString(),
-                            count: count,
-                            previousCount: previousAluminumCount
-                        };
-                        
-                        // Push the timestamp and update the monthly total
-                        aluminumTimestampsRef.push().set(timestampData);
-                        currentMonthRef.set(count);
-                    }
-                });
+                // Push the timestamp to the database
+                aluminumTimestampsRef.push().set(timestampData);
             }
             
             previousAluminumCount = count;
         }
     });
     
+
     $('.reset-button, #reset-counts').click(function() {
         // Reset the counters
         database.ref('CrushCount').set(0);
@@ -331,15 +305,6 @@ $(document).ready(function(){
         database.ref('AluminumCanTimestamps').remove()
             .then(() => console.log("AluminumCanTimestamps history cleared."))
             .catch((error) => console.error("Error clearing AluminumCanTimestamps:", error));
-        
-        // Clear the monthly totals as well - THIS IS THE KEY ADDITION
-        database.ref('PlasticMonthTotals').remove()
-            .then(() => console.log("PlasticMonthTotals cleared."))
-            .catch((error) => console.error("Error clearing PlasticMonthTotals:", error));
-        
-        database.ref('AluminumMonthTotals').remove()
-            .then(() => console.log("AluminumMonthTotals cleared."))
-            .catch((error) => console.error("Error clearing AluminumMonthTotals:", error));
     
         // Store a reset event in the database for logging purposes
         var now = new Date();
@@ -349,10 +314,6 @@ $(document).ready(function(){
             time: now.toLocaleTimeString(),
             event: "Counters Reset"
         };
-    
-        // Create the timestamp references if they don't exist yet
-        var plasticTimestampsRef = database.ref('PlasticBottleTimestamps');
-        var aluminumTimestampsRef = database.ref('AluminumCanTimestamps');
     
         // Push the reset event to the database
         plasticTimestampsRef.push().set(resetData);
@@ -364,11 +325,6 @@ $(document).ready(function(){
     
         // Also set the ResetCount flag for backward compatibility with ESP32
         database.ref('ResetCount').set(true);
-        
-        // Optional: Refresh the statistics chart if it's on the same page
-        if (typeof fetchData === 'function') {
-            fetchData();
-        }
     });
     
 });
