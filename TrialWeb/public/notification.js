@@ -11,7 +11,7 @@ $(document).ready(function() {
         "debug": false,
         "newestOnTop": true,
         "progressBar": true,
-        "positionClass": "toast-top-right", // Position of the toast
+        "positionClass": "toast-top-center", // Position of the toast
         "preventDuplicates": false, // Set to false to allow multiple notifications
         "onclick": null,
         "showDuration": "300",
