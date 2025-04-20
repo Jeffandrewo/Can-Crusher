@@ -9,24 +9,12 @@ body {
     align-items: center;
     height: 100vh;
     overflow: hidden;
-    background-image: url('as.png'); /* Same directory */
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
 }
 
 /* Landing Page Styles */
 #landing-page {
     text-align: center;
     color: white;
-
-     /* Move to right */
-     display: flex;
-     flex-direction: column;
-     align-items: flex-end; /* Align to the right */
-     justify-content: center;
-     height: 100vh; /* Full height */
-     padding-right: 5%; /* Add spacing from right edge */
 }
 
 #landing-page h1 {
@@ -78,7 +66,7 @@ body {
     border-radius: 15px;
     overflow: hidden;
     box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    max-height: 100vh; /* Ensure it fits within viewport height */
+    max-height: 90vh; /* Ensure it fits within viewport height */
 }
 
 .main-content {
@@ -224,26 +212,12 @@ body {
 }
 
 .admin-login-form {
-    background-image: url('AA.jpg'); /* Same directory */
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    background: #2c3e50;
     padding: 30px;
     border-radius: 10px;
-    border-width: 10px;
     text-align: center;
     max-width: 400px;
     width: 90%;
-
-      /* Positioning */
-      position: fixed; /* Sticks to the viewport */
-      top: 0; /* Sticks to the top */
-      right: 0; /* Sticks to the right */
-      bottom: 0; /* Sticks to the bottom */
-      
-      display: flex;
-      flex-direction: column;
-      justify-content: center; /* Centers content vertically */
 }
 
 .admin-login-form input {
@@ -384,6 +358,28 @@ body {
     color: #333;
 }
 
+/* Week Selector Styling */
+.week-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.week-selector label {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+.week-selector select {
+    padding: 8px 12px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    background-color: #ffffff;
+    color: #333;
+}
+
 /* Buttons Styling */
 button {
     padding: 10px 15px;
@@ -400,6 +396,15 @@ button#apply-filter {
 }
 
 button#apply-filter:hover {
+    background-color: #45a049; /* Darker green on hover */
+}
+
+button#apply-week-filter {
+    background-color: #4CAF50; /* Green button */
+    color: white;
+}
+
+button#apply-week-filter:hover {
     background-color: #45a049; /* Darker green on hover */
 }
 
@@ -484,4 +489,3 @@ button#refresh-data:hover {
 .crusher-icon {
     color: #e74c3c;
 }
-
