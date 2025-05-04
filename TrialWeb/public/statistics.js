@@ -1,3 +1,4 @@
+// statistics.js
 const firebaseConfig = {
     apiKey: "AIzaSyB9WEKy2...",
     authDomain: "toggle-6ce93.firebaseapp.com",
@@ -9,7 +10,6 @@ const firebaseConfig = {
     measurementId: "G-T7XSCYV8L7"
 };
 
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -69,60 +69,85 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function fetchData(selectedMonth = "all") {
         console.log("Fetching data...");
-    
-        // Ensure arrays are reset before processing new data
-        let plasticData = Array(12).fill(0);
-        let aluminumData = Array(12).fill(0);
-    
+
+        const isMonthly = selectedMonth === "all";
+        const plasticData = Array(isMonthly ? 12 : 5).fill(0);
+        const aluminumData = Array(isMonthly ? 12 : 5).fill(0);
+
         database.ref().once("value", function (snapshot) {
             if (!snapshot.exists()) {
                 console.log("No data found in Firebase.");
                 return;
             }
-    
+
             let data = snapshot.val();
-            console.log("Firebase Data:", data); // Debugging
-    
+            console.log("Firebase Data:", data);
+
+            function processEntries(entries, dataArray, selectedMonth) {
+                const weeklyTotals = Array(5).fill(0);
+            
+                // Filter and sort entries by date
+                const filtered = Object.values(entries)
+                    .filter(entry => entry.date)
+                    .map(entry => {
+                        return {
+                            date: new Date(entry.date + "T00:00:00"),
+                            count: parseInt(entry.count, 10) || 0
+                        };
+                    })
+                    .sort((a, b) => a.date - b.date);
+            
+                if (isMonthly) {
+                    // For monthly view, just take the latest entry per month
+                    filtered.forEach(entry => {
+                        let monthIndex = entry.date.getMonth();
+                        dataArray[monthIndex] = entry.count; // last wins
+                    });
+                } else {
+                    // Weekly logic
+                    const monthIndex = parseInt(selectedMonth) - 1;
+            
+                    filtered.forEach(entry => {
+                        if (entry.date.getMonth() === monthIndex) {
+                            let weekIndex = Math.floor((entry.date.getDate() - 1) / 7);
+                            if (weekIndex >= 0 && weekIndex < 5) {
+                                weeklyTotals[weekIndex] = entry.count;
+                            }
+                        }
+                    });
+            
+                    // Subtract previous week to get actual increment
+                    for (let i = 0; i < 5; i++) {
+                        if (i === 0) {
+                            dataArray[i] = weeklyTotals[i];
+                        } else {
+                            dataArray[i] = weeklyTotals[i] - weeklyTotals[i - 1];
+                            if (dataArray[i] < 0) dataArray[i] = 0; // prevent negatives if data is bad
+                        }
+                    }
+                }
+            }
+            
+
             if (data.PlasticBottleTimestamps) {
-                Object.values(data.PlasticBottleTimestamps).forEach((entry) => {
-                    let dateParts = entry.date.split(" ");
-                    let monthName = dateParts[0];
-                    let monthIndex = months.indexOf(monthName);
-    
-                    if (monthIndex >= 0 && monthIndex < 12) {
-                        let count = parseInt(entry.count, 10) || 0;
-                        if (selectedMonth === "all" || monthIndex === parseInt(selectedMonth) - 1) {
-                            plasticData[monthIndex] = count; // Assign instead of adding
-                        }
-                    }
-                });
+                processEntries(data.PlasticBottleTimestamps, plasticData, selectedMonth);
             }
-    
+
             if (data.AluminumCanTimestamps) {
-                Object.values(data.AluminumCanTimestamps).forEach((entry) => {
-                    let dateParts = entry.date.split(" ");
-                    let monthName = dateParts[0];
-                    let monthIndex = months.indexOf(monthName);
-    
-                    if (monthIndex >= 0 && monthIndex < 12) {
-                        let count = parseInt(entry.count, 10) || 0;
-                        if (selectedMonth === "all" || monthIndex === parseInt(selectedMonth) - 1) {
-                            aluminumData[monthIndex] = count; // Assign instead of adding
-                        }
-                    }
-                });
+                processEntries(data.AluminumCanTimestamps, aluminumData, selectedMonth);
             }
-    
-            console.log("Updated Plastic Data:", plasticData);
-            console.log("Updated Aluminum Data:", aluminumData);
-    
-            // Ensure chart data is fully reset before updating
-            statisticsChart.data.datasets[0].data = [...plasticData];
-            statisticsChart.data.datasets[1].data = [...aluminumData];
+
+            let labels = isMonthly ? months : ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5"];
+
+            statisticsChart.data.labels = labels;
+            statisticsChart.data.datasets[0].data = plasticData;
+            statisticsChart.data.datasets[1].data = aluminumData;
+            statisticsChart.options.plugins.title.text = isMonthly ? 'Monthly Recycling Data' : `${months[parseInt(selectedMonth) - 1]} - Weekly Recycling Data`;
+
             statisticsChart.update();
         });
     }
-    
+
     // Automatically fetch data on page load
     fetchData();
 

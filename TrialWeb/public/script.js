@@ -18,7 +18,7 @@ $(document).ready(function(){
     var $status = $('.status-indicator');
     var $progressBar = $('.progress-bar');
     var $countdownTimer = $('.countdown-timer');
-    var totalTime = 30; // Total time in seconds
+    var totalTime = 32; // Total time in seconds
     var countdownInterval;
     
     // References for bin fill levels
@@ -99,7 +99,7 @@ $(document).ready(function(){
         
         // Reset progress bar and countdown
         $progressBar.css('width', '0%');
-        $countdownTimer.text('Time Remaining: 30s');
+        $countdownTimer.text('Time Remaining: 32s');
     }
 
     function startCountdown(time) {
@@ -168,7 +168,7 @@ $(document).ready(function(){
                 $rod.removeClass('extended');
                 $status.text('Status: Idle');
                 $progressBar.css('width', '0%');
-                $countdownTimer.text('Time Remaining: 30s');
+                $countdownTimer.text('Time Remaining: 32s');
                 
                 // Clear any existing countdown interval
                 if (countdownInterval) {
@@ -178,7 +178,7 @@ $(document).ready(function(){
             default:
                 $status.text('Status: Idle');
                 $progressBar.css('width', '0%');
-                $countdownTimer.text('Time Remaining: 30s');
+                $countdownTimer.text('Time Remaining: 32s');
                 
                 // Clear any existing countdown interval
                 if (countdownInterval) {
@@ -247,10 +247,10 @@ $(document).ready(function(){
             // If count has increased, log a timestamp
             if (count > previousPlasticCount) {
                 var now = new Date();
-                var monthYear = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); // "March 2025"
+                var fullDate = now.toISOString().split("T")[0]; // "2025-04-19"
                 
                 var timestampData = {
-                    date: monthYear,  // Stores only Month and Year
+                    date: fullDate,  
                     time: now.toLocaleTimeString(),
                     count: count,
                     previousCount: previousPlasticCount
@@ -273,10 +273,10 @@ $(document).ready(function(){
             // If count has increased, log a timestamp
             if (count > previousAluminumCount) {
                 var now = new Date();
-                var monthYear = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); // "March 2025"
+                var fullDate = now.toISOString().split("T")[0]; // "2025-04-19"
                 
                 var timestampData = {
-                    date: monthYear,  // Stores only Month and Year
+                    date: fullDate,  
                     time: now.toLocaleTimeString(),
                     count: count,
                     previousCount: previousAluminumCount
@@ -310,7 +310,7 @@ $(document).ready(function(){
         var now = new Date();
         var resetData = {
             timestamp: firebase.database.ServerValue.TIMESTAMP,
-            date: now.toLocaleDateString(),
+            date: now.toISOString().split("T")[0],
             time: now.toLocaleTimeString(),
             event: "Counters Reset"
         };
